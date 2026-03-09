@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+ <title>Mi Asistente IA (DeepSeek)</title>
+
+ <style>
+
+  body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
+
+  .chat-container { border: 1px solid #ddd; height: 400px; overflow-y: scroll; padding: 20px; margin: 20px 0; }
+
+  input { width: 70%; padding: 12px; }
+
+  button { width: 25%; padding: 12px; background: #0078d4; color: white; border: none; }
+
+  .message { margin: 10px 0; padding: 10px; border-radius: 10px; }
+
+  .user { background: #e3f2fd; }
+
+  .ai { background: #f3f3f3; }
+
+ </style>
+
+</head>
+
+<body>
+
+ <h1>Mi Asistente IA (DeepSeek en Azure)</h1>
+
+
+
+ <div id="chat" class="chat-container"></div>
+
+
+
+ <input id="messageInput" type="text" placeholder="Pregunta algo">
+
+ <button onclick="sendMessage()">Enviar</button>
+
+
+
+ <script>
+
+  // RELLENA ESTOS 3 VALORES CON LOS DE TU DEPLOYMENT DEEPSEEK
+
+  const API_KEY  = "C7kIhCElukt8ksfj0SMWKG1SV8Dt5KqM3Tdqx2rWRIDGwYfowX7UJQQJ99CCACR0EKYXJ3w3AAAAACOG4Ut2";
+
+  const ENDPOINT = "https://iainesdi.services.ai.azure.com/models/"; // termina en /models/
+
+  const MODEL   = "DeepSeek-V3.2"; // o DeepSeek-R1, o el nombre exacto que veas
+
+
+
+  // La API de DeepSeek en Azure usa el endpoint /chat/completions con api-version 2024-05-01-preview[web:888][web:892]
+
+  const API_VERSION = "2024-05-01-preview";
+
+
+
+  async function sendMessage() {
+
+   const input = document.getElementById('messageInput');
+
+   const userMessage = input.value.trim();
+
+   if (!userMessage) return;
+
+
+
+   input.value = '';
+
+   addMessage('Tú', userMessage, 'user');
+
+
+
+   try {
+
+    const url = `${ENDPOINT}chat/completions?api-version=${API_VERSION}`;
+
+
+
+    const response = await fetch(url, {
+
+     method: 'POST',
+
+     headers: {
+
+      'Content-Type': 'application/json',
+
+      'api-key': API_KEY,
+
+      'Accept': 'application/json'
+
+     },
+
+     body: JSON.stringify({
+
+      model: MODEL, // para DeepSeek en Foundry se pasa el nombre de modelo/deployment[web:892]
+
+      messages: [
+
+       { role: "system", content: "Eres un asistente útil y respondes en español de forma breve." },
+
+       { role: "user", content: userMessage }
+
+      ],
+
+      max_tokens: 500
+
+     })
+
+    });
+
+
+
+    if (!response.ok) {
+
+     const errorText = await response.text();
+
+     console.error('Error completo:', errorText);
+
+     addMessage('❌', `Error ${response.status}: ${errorText.substring(0, 200)}`, 'ai');
+
+     return;
+
+    }
+
+
+
+    const data = await response.json();
+
+    const reply = data.choices?.[0]?.message?.content || "(Sin respuesta del modelo)";
+
+    addMessage('🤖 IA', reply, 'ai');
+
+   } catch (error) {
+
+    console.error('Fetch error:', error);
+
+    addMessage('❌', 'Error de conexión', 'ai');
+
+   }
+
+  }
+
+
+
+  function addMessage(sender, text, type) {
+
+   const chat = document.getElementById('chat');
+
+   chat.innerHTML += `<div class="message ${type}"><strong>${sender}:</strong> ${text}</div>`;
+
+   chat.scrollTop = chat.scrollHeight;
+
+  }
+
+
+
+  document.getElementById('messageInput').addEventListener('keypress', function(e) {
+
+   if (e.key === 'Enter') sendMessage();
+
+  });
+
+ </script>
+
+</body>
+
+</html>
