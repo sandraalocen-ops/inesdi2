@@ -148,15 +148,19 @@
 
 
 
-  function addMessage(sender, text, type) {
-
-   const chat = document.getElementById('chat');
-
-   chat.innerHTML += `<div class="message ${type}"><strong>${sender}:</strong> ${text}</div>`;
-
-   chat.scrollTop = chat.scrollHeight;
-
-  }
+function addMessage(sender, text, type) {
+ const chat = document.getElementById('chat');
+ const div = document.createElement('div');
+ div.className = `message ${type}`;
+ 
+ // 👇 AQUÍ CAMBIAS LOS NOMBRES
+ const userLabel = "👤 Sandra";     // ← CAMBIA "Tú" por esto
+ const aiLabel = "🧠 DeepSeek";      // ← CAMBIA "🤖 IA" por esto
+ 
+ div.innerHTML = `<strong>${type === 'user' ? userLabel : aiLabel}:</strong> ${text.replace(/\n/g, '<br>')}`;
+ chat.appendChild(div);
+ chat.scrollTop = chat.scrollHeight;
+}
 
 
 
